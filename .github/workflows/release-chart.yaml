@@ -33,7 +33,7 @@ jobs:
         uses: azure/setup-helm@v3
 
       - name: Helm package
-        run: helm package charts/oci-secrets-store-csi-driver-provider -d charts/oci-secrets-store-csi-driver-provider
+        run: helm package charts/oci-secrets-store-csi-driver-provider
 
       - name: list
         run: ls charts
