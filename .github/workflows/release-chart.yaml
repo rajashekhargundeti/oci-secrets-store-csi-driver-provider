@@ -40,7 +40,7 @@ jobs:
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.5.0
-        with:
-          charts_dir: charts/oci-secrets-store-csi-driver-provider
+        # with:
+        #   charts_dir: charts/oci-secrets-store-csi-driver-provider
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"

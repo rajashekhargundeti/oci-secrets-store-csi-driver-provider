@@ -7,7 +7,7 @@
 apiVersion: v2
 name: oci-secrets-store-csi-driver-provider
 description: OCI Vault provider for the Secrets Store CSI driver.
-version: 0.2.10
+version: 0.2.11
 type: application
 
 appVersion: "0.9.6"
