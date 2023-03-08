@@ -15,9 +15,15 @@ else
 	IMAGE_REGISTRY	?= ${IMAGE_REGISTRY}
 endif
 
+ifeq "$(RELEASE)" ""
+	IMAGE_TAG ?= $(GIT_TAG)
+else
+	IMAGE_TAG	?= ${RELEASE}
+endif
+
 # IMAGE_REPO=$(IMAGE_REGISTRY)/oci-secrets-store-csi-driver-provider
 IMAGE_URL=$(IMAGE_REGISTRY)/$(IMAGE_REPO_NAME)
-IMAGE_TAG=$(GIT_TAG)
+# IMAGE_TAG=$(GIT_TAG)
 IMAGE_PATH=$(IMAGE_URL):$(IMAGE_TAG)
 
 LDFLAGS?="-X github.com/oracle-samples/oci-secrets-store-csi-driver-provider/internal/server.BuildVersion=$(BUILD_VERSION)"
