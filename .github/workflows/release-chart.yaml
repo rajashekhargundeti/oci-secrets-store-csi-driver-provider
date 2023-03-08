@@ -35,6 +35,9 @@ jobs:
       - name: Helm package
         run: helm package charts/oci-secrets-store-csi-driver-provider -d charts
 
+      - name: list
+        run: ls charts
+
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.5.0
         with:

@@ -10,7 +10,7 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   labels:
-    test: hello
+    test: hello-test123
     app.kubernetes.io/name: {{ .Chart.Name }}
   name: {{ .Chart.Name }}
   namespace: {{ .Release.Namespace }}
