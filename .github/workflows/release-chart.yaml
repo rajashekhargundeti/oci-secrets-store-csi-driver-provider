@@ -4,7 +4,7 @@ on:
   push:
     # Build and publish artifacts for a release
     tags:
-      - "v*.*.*"
+      - "t*.*.*"
 
 jobs:
   release-chart:
@@ -26,6 +26,9 @@ jobs:
 
       - name: Install Helm
         uses: azure/setup-helm@v3
+
+      - name: Helm package
+        run: helm package charts/oci-secrets-store-csi-driver-provider -d charts
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.5.0
