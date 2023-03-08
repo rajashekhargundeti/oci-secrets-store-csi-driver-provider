@@ -5,11 +5,12 @@
 # Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl/
 # 
 # Daemonset manifest for OCI Vault Provider.
-
+#
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   labels:
+    test: hello
     app.kubernetes.io/name: {{ .Chart.Name }}
   name: {{ .Chart.Name }}
   namespace: {{ .Release.Namespace }}
