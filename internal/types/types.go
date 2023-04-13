@@ -187,6 +187,8 @@ func MapToPrincipalType(authType string) (OCIPrincipalType, error) {
 		return Instance, nil
 	case string(User):
 		return User, nil
+	case string(Workload):
+		return Workload, nil
 	default:
 		return "", fmt.Errorf("unknown OCI principal type: %v", authType)
 	}
