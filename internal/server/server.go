@@ -183,7 +183,8 @@ func (server *ProviderServer) retrieveAuthConfig(ctx context.Context,
 		}
 		saTokenStr, err := server.getSAToken(podInfo)
 		if err != nil {
-			err := fmt.Errorf("can not generate token for service account: %s, namespace: %s", podInfo.ServiceAccountName, podInfo.Namespace)
+			err := fmt.Errorf("can not generate token for service account: %s, namespace: %s, Error: %v",
+				podInfo.ServiceAccountName, podInfo.Namespace, err)
 			return nil, err
 		}
 
@@ -264,7 +265,7 @@ func (server *ProviderServer) getSAToken(podInfo *types.PodInfo) (string, error)
 			meta.CreateOptions{},
 		)
 	if err != nil {
-		return "", fmt.Errorf("unable to fetch token from token api: %w", err)
+		return "", fmt.Errorf("unable to fetch token from token api: %v", err)
 	}
 	// fmt.Printf("\nToken Response: %v", resp)
 	// fmt.Printf("\nToken: %v", resp.Status.Token)
