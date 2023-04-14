@@ -253,7 +253,7 @@ func (server *ProviderServer) getSAToken(podInfo *types.PodInfo) (string, error)
 			&authenticationv1.TokenRequest{
 				Spec: authenticationv1.TokenRequestSpec{
 					ExpirationSeconds: &ttl,
-					Audiences:         []string{},
+					Audiences:         []string{"oci", "api"},
 					BoundObjectRef: &authenticationv1.BoundObjectReference{
 						Kind:       "Pod",
 						APIVersion: "v1",
