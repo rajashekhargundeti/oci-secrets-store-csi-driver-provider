@@ -32,8 +32,17 @@ jobs:
       # - name: Install Helm
       #   uses: azure/setup-helm@v3
 
+      - name: split image path into repo and tag
+        id: split-image-path
+        run: |
+          echo PROVIDER_IMAGE_REPO=`echo ${{ env.IMAGE_PATH }} | sed -e "s/:.*$//"` >> $GITHUB_ENV
+          echo PROVIDER_IMAGE_TAG=`echo ${{ env.IMAGE_PATH }} | sed -e "s/.*://"` >> $GITHUB_ENV
+
       - name: Helm package
         run: |
+          sed -i -e 's/repository:.*/repository: ${{ env.PROVIDER_IMAGE_REPO }}/' \
+          -e 's/tag:.*/tag: ${{ env.PROVIDER_IMAGE_TAG }}/' \
+          charts/oci-secrets-store-csi-driver-provider/values.yaml 
           helm package charts/oci-secrets-store-csi-driver-provider -d charts
           helm repo index --url https://${{$GITHUB_ACTOR}}.github.io/oci-secrets-store-csi-driver-provider/charts --merge charts/index.yaml charts
           git add charts
