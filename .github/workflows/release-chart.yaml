@@ -41,4 +41,10 @@ jobs:
           echo PROVIDER_IMAGE_TAG=`echo ${{ env.IMAGE_PATH }} | sed -e "s/.*://"` >> $GITHUB_ENV
 
       - name: print
-        run: echo ${{ env.PROVIDER_IMAGE_REPO }} ${{ env.PROVIDER_IMAGE_TAG }}    
+        run: echo ${{ env.PROVIDER_IMAGE_REPO }} ${{ env.PROVIDER_IMAGE_TAG }}
+
+      - name: sed
+        run: |
+          sed -i -e 's/repository:.*/repository: ${{ env.PROVIDER_IMAGE_REPO }}/' \
+          -e 's/tag:.*/tag: ${{ env.PROVIDER_IMAGE_TAG }}/' \
+          charts/oci-secrets-store-csi-driver-provider/values.yaml
