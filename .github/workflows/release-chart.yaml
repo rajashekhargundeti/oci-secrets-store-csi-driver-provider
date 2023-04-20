@@ -40,11 +40,16 @@ jobs:
           echo PROVIDER_IMAGE_REPO=`echo ${{ env.IMAGE_PATH }} | sed -e "s/:.*$//"` >> $GITHUB_ENV
           echo PROVIDER_IMAGE_TAG=`echo ${{ env.IMAGE_PATH }} | sed -e "s/.*://"` >> $GITHUB_ENV
 
-      - name: print
-        run: echo ${{ env.PROVIDER_IMAGE_REPO }} ${{ env.PROVIDER_IMAGE_TAG }}
+      # - name: print
+      #   run: echo ${{ env.PROVIDER_IMAGE_REPO }} ${{ env.PROVIDER_IMAGE_TAG }}
 
       - name: sed
         run: |
-          sed -i -e 's/repository:.*/repository: ${{ env.PROVIDER_IMAGE_REPO }}/' \
-          -e 's/tag:.*/tag: ${{ env.PROVIDER_IMAGE_TAG }}/' \
-          charts/oci-secrets-store-csi-driver-provider/values.yaml
+          sed -i -e 's|repository:.*|repository: ${{ env.PROVIDER_IMAGE_REPO }}|' \
+          -e 's|tag:.*|tag: ${{ env.PROVIDER_IMAGE_TAG }}|' \
+          charts/oci-secrets-store-csi-driver-provider/values.yaml 
+          helm package charts/oci-secrets-store-csi-driver-provider -d charts
+          helm repo index --url https://${{$GITHUB_ACTOR}}.github.io/oci-secrets-store-csi-driver-provider/charts --merge charts/index.yaml charts
+          git add charts
+          git commit -m "Releasing chart version: ${{ git.ref_name }}"
+          git push -u origin gh-pages
