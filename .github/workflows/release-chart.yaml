@@ -45,6 +45,8 @@ jobs:
 
       - name: sed
         run: |
+          git checkout gh-pages
+          git checkout origin/main charts
           sed -i -e 's|repository:.*|repository: ${{ env.PROVIDER_IMAGE_REPO }}|' \
           -e 's|tag:.*|tag: ${{ env.PROVIDER_IMAGE_TAG }}|' \
           charts/oci-secrets-store-csi-driver-provider/values.yaml 
