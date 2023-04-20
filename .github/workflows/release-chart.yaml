@@ -42,9 +42,9 @@ jobs:
 
       - name: Helm package
         run: |
-          sed -i -e 's/repository:.*/repository: ${{ env.PROVIDER_IMAGE_REPO }}/' \
-          -e 's/tag:.*/tag: ${{ env.PROVIDER_IMAGE_TAG }}/' \
-          charts/oci-secrets-store-csi-driver-provider/values.yaml 
+          # sed -i -e 's/repository:.*/repository: ${{ env.PROVIDER_IMAGE_REPO }}/' \
+          # -e 's/tag:.*/tag: ${{ env.PROVIDER_IMAGE_TAG }}/' \
+          # charts/oci-secrets-store-csi-driver-provider/values.yaml 
           helm package charts/oci-secrets-store-csi-driver-provider -d charts
           helm repo index --url https://${{$GITHUB_ACTOR}}.github.io/oci-secrets-store-csi-driver-provider/charts --merge charts/index.yaml charts
           git add charts
