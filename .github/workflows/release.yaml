@@ -16,19 +16,33 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3.3.0
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+      # - name: Set up QEMU
+      #   uses: docker/setup-qemu-action@v2
+      #   with:
+      #     platforms: amd64  
+
+      # - name: Set up Docker Buildx
+      #   uses: docker/setup-buildx-action@v2
+
+      # - name: Log into GitHub Container Registry
+      #   run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${GITHUB_ACTOR,,} --password-stdin
+
+      # - name: Build Image
+      #   run: RELEASE="${{ github.ref_name }}" IMAGE_REGISTRY="${{ env.IMAGE_REGISTRY }}" make docker-build
+
+      # - name: Push Image
+      #   run: RELEASE="${{ github.ref_name }}" IMAGE_REGISTRY="${{ env.IMAGE_REGISTRY }}" make docker-push
+
+      - name: Helm package
+        run: helm package charts/oci-secrets-store-csi-driver-provider -d charts
+
+      - name: list
+        run: ls charts
+
+      - name: Run chart-releaser
+        uses: helm/chart-releaser-action@v1.5.0
         with:
-          platforms: amd64  
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Log into GitHub Container Registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${GITHUB_ACTOR,,} --password-stdin
-
-      - name: Build Image
-        run: RELEASE="${{ github.ref_name }}" IMAGE_REGISTRY="${{ env.IMAGE_REGISTRY }}" make docker-build
-
-      - name: Push Image
-        run: RELEASE="${{ github.ref_name }}" IMAGE_REGISTRY="${{ env.IMAGE_REGISTRY }}" make docker-push
+          charts_dir: charts/oci-secrets-store-csi-driver-provider
+          skip_packaging: true
+        env:
+          CR_TOKEN: "${{ secrets.CR_PAT }}"  
