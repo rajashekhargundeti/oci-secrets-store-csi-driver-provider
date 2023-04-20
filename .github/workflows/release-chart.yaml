@@ -51,5 +51,5 @@ jobs:
           helm package charts/oci-secrets-store-csi-driver-provider -d charts
           helm repo index --url https://${GITHUB_ACTOR,,}.github.io/oci-secrets-store-csi-driver-provider/charts --merge charts/index.yaml charts
           git add charts
-          git commit -m "Releasing chart version: ${{ git.ref_name }}"
+          git commit -m "Releasing chart version: ${{ github.ref_name }}"
           git push -u origin gh-pages
