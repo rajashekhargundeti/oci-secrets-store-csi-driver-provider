@@ -31,22 +31,16 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
-      # - name: Install Helm
-      #   uses: azure/setup-helm@v3
-
       - name: split image path into repo and tag
         id: split-image-path
         run: |
           echo PROVIDER_IMAGE_REPO=`echo ${{ env.IMAGE_PATH }} | sed -e "s/:.*$//"` >> $GITHUB_ENV
           echo PROVIDER_IMAGE_TAG=`echo ${{ env.IMAGE_PATH }} | sed -e "s/.*://"` >> $GITHUB_ENV
 
-      # - name: print
-      #   run: echo ${{ env.PROVIDER_IMAGE_REPO }} ${{ env.PROVIDER_IMAGE_TAG }}
-
       - name: sed
         run: |
           git checkout gh-pages
-          git checkout origin/main charts
+          git checkout origin/OKE-23021 charts
           sed -i -e 's|repository:.*|repository: ${{ env.PROVIDER_IMAGE_REPO }}|' \
           -e 's|tag:.*|tag: ${{ env.PROVIDER_IMAGE_TAG }}|' \
           charts/oci-secrets-store-csi-driver-provider/values.yaml 
