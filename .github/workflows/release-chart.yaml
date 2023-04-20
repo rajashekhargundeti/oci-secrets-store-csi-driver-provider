@@ -18,6 +18,8 @@ jobs:
     # permissions:
     #   contents: write
     runs-on: ubuntu-latest
+    env:
+      IMAGE_PATH: ghcr.io/rajashekhargundeti/oci-secrets-store-csi-driver-provider:26fa05efa2d70964fbf01de8fef2f54441527503
     steps:
       - name: Checkout
         uses: actions/checkout@v3
