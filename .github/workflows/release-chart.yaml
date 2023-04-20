@@ -15,8 +15,8 @@ jobs:
   release-chart:
     # depending on default permission settings for your org (contents being read-only or read-write for workloads), you will have to add permissions
     # see: https://docs.github.com/en/actions/security-guides/automatic-token-authentication#modifying-the-permissions-for-the-github_token
-    permissions:
-      contents: write
+    # permissions:
+    #   contents: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -33,15 +33,23 @@ jobs:
       #   uses: azure/setup-helm@v3
 
       - name: Helm package
-        run: helm package charts/oci-secrets-store-csi-driver-provider -d charts
+        run: |
+          helm package charts/oci-secrets-store-csi-driver-provider -d charts
+          helm repo index --url https://${{$GITHUB_ACTOR}}.github.io/oci-secrets-store-csi-driver-provider/charts --merge charts/index.yaml charts
+          git add charts
+          git commit -m "Releasing chart version: ${{ git.ref_name }}"
+          git push -u origin gh-pages
 
-      - name: list
-        run: ls charts
+      # - name: list
+      #   run: ls charts
 
-      - name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.5.0
-        with:
-          charts_dir: charts/oci-secrets-store-csi-driver-provider
-          skip_packaging: true
-        env:
-          CR_TOKEN: "${{ secrets.CR_PAT }}"
+      # - name: merge
+      #   run: helm repo index --url <> --merge charts/index.yaml charts  
+
+      # - name: Run chart-releaser
+      #   uses: helm/chart-releaser-action@v1.5.0
+      #   with:
+      #     charts_dir: charts/oci-secrets-store-csi-driver-provider
+      #     skip_packaging: true
+      #   env:
+      #     CR_TOKEN: "${{ secrets.CR_PAT }}"
