@@ -3,7 +3,7 @@ entries:
   oci-secrets-store-csi-driver-provider:
   - apiVersion: v2
     appVersion: 0.9.10
-    created: "2023-04-20T12:05:21.175765842Z"
+    created: "2023-04-26T16:57:17.475076172Z"
     dependencies:
     - condition: secrets-store-csi-driver.install
       name: secrets-store-csi-driver
@@ -23,8 +23,29 @@ entries:
     - https://rajashekhargundeti.github.io/oci-secrets-store-csi-driver-provider/charts/oci-secrets-store-csi-driver-provider-0.2.10.tgz
     version: 0.2.10
   - apiVersion: v2
+    appVersion: 0.9.4
+    created: "2023-04-26T16:57:17.492128138Z"
+    dependencies:
+    - condition: secrets-store-csi-driver.install
+      name: secrets-store-csi-driver
+      repository: https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts
+      version: 1.2.0
+    description: OCI Vault provider for the Secrets Store CSI driver.
+    digest: 5eb9f036b71f801feaa0fa2af2fe844a627ecb5b174655b86c129ddba793846f
+    keywords:
+    - oci
+    - secrets-store-csi-driver-provider
+    kubeVersion: '>=1.19.0-0'
+    maintainers:
+    - name: OKE Foundations team
+    name: oci-secrets-store-csi-driver-provider
+    type: application
+    urls:
+    - https://rajashekhargundeti.github.io/oci-secrets-store-csi-driver-provider/charts/oci-secrets-store-csi-driver-provider-0.2.8.tgz
+    version: 0.2.8
+  - apiVersion: v2
     appVersion: 0.9.2
-    created: "2023-04-20T12:05:21.17931376Z"
+    created: "2023-04-26T16:57:17.476622687Z"
     dependencies:
     - condition: secrets-store-csi-driver.install
       name: secrets-store-csi-driver
@@ -43,4 +64,4 @@ entries:
     urls:
     - https://rajashekhargundeti.github.io/oci-secrets-store-csi-driver-provider/charts/oci-secrets-store-csi-driver-provider-0.2.5.tgz
     version: 0.2.5
-generated: "2023-04-20T12:05:21.172632327Z"
+generated: "2023-04-26T16:57:17.473221054Z"
