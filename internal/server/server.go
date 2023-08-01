@@ -72,7 +72,7 @@ func (*ProviderServer) Version(context.Context, *provider.VersionRequest) (*prov
 func (server *ProviderServer) Mount(
 	ctx context.Context, mountRequest *provider.MountRequest) (*provider.MountResponse, error) {
 	var filePermission os.FileMode
-
+	log.Info().Str("RequestParams:", fmt.Sprintf("%#v", mountRequest))
 	attributes, err := server.unmarshalRequestAttributes(mountRequest.GetAttributes())
 	if err != nil {
 		return nil, status.Error(
