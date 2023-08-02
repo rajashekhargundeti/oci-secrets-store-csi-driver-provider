@@ -13,7 +13,7 @@ import (
 
 	"github.com/oracle-samples/oci-secrets-store-csi-driver-provider/internal/types"
 	"github.com/oracle/oci-go-sdk/v65/common"
-	"github.com/oracle/oci-go-sdk/v65/common/auth"
+	ociGoSdkAuth "github.com/oracle/oci-go-sdk/v65/common/auth"
 	"github.com/oracle/oci-go-sdk/v65/secrets"
 )
 
@@ -41,12 +41,20 @@ func (factory *OCISecretClientFactory) createConfigProvider( //nolint:ireturn //
 
 	case types.Instance:
 		// note that we set timeout for HTTP client because it is absent by default
-		return auth.InstancePrincipalConfigurationProviderWithCustomClient(setHTTPClientTimeout(httpClientTimeout))
+		return ociGoSdkAuth.InstancePrincipalConfigurationProviderWithCustomClient(setHTTPClientTimeout(httpClientTimeout))
 
 	case types.User:
 		cfg := authCfg.Config
 		return common.NewRawConfigurationProvider(cfg.TenancyID, cfg.UserID,
 			cfg.Region, cfg.Fingerprint, cfg.PrivateKey, &cfg.Passphrase), nil
+
+	case types.Workload:
+		podInfo := authCfg.WorkloadIdentityCfg.PodInfo
+		saToken, err := getSAToken(podInfo)
+		if err != nil {
+			return nil, err
+		}
+		return ociGoSdkAuth.OkeWorkloadIdentityConfigurationProviderWithServiceAccountTokenProvider(ociGoSdkAuth.NewSuppliedServiceAccountTokenProvider(saToken))
 
 	default:
 		return nil, fmt.Errorf("unable to determine OCI principal type for configuration provider")

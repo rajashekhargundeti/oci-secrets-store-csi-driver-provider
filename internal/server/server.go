@@ -23,6 +23,7 @@ import (
 	"gopkg.in/yaml.v3"
 	core "k8s.io/api/core/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	apiMachineryTypes "k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	provider "sigs.k8s.io/secrets-store-csi-driver/provider/v1alpha1"
@@ -52,6 +53,9 @@ const vaultIDField = "vaultId"
 const secretProviderClassField = "secretProviderClass"
 const podNameField = "csi.storage.k8s.io/pod.name"
 const podNamespaceField = "csi.storage.k8s.io/pod.namespace"
+const podUIDField = "csi.storage.k8s.io/pod.uid"
+const podServiceAccountField = "csi.storage.k8s.io/serviceAccount.name"
+const podServiceAccountTokensField = "csi.storage.k8s.io/serviceAccount.tokens" //#nosec G101 -- This is a false positive. Token value is not being revealed. This is just the key name.
 
 // BuildVersion set during the build with ldflags
 var BuildVersion string
@@ -166,9 +170,62 @@ func (server *ProviderServer) retrieveAuthConfig(ctx context.Context,
 			return nil, fmt.Errorf("missing auth config data: %v", err)
 		}
 		auth.Config = *authCfg
+
+	} else if principalType == types.Workload {
+
+		podInfo := &types.PodInfo{
+			Name:                 requestAttributes[podNameField],
+			UID:                  apiMachineryTypes.UID(requestAttributes[podUIDField]),
+			ServiceAccountName:   requestAttributes[podServiceAccountField],
+			Namespace:            requestAttributes[podNamespaceField],
+			ServiceAccountTokens: requestAttributes[podServiceAccountTokensField],
+		}
+		// saTokenStr, err := server.getSAToken(podInfo)
+		// if err != nil {
+		// 	err := fmt.Errorf("can not get or generate token for service account: %s, namespace: %s, Error: %v",
+		// 		podInfo.ServiceAccountName, podInfo.Namespace, err)
+		// 	return nil, err
+		// }
+
+		auth.WorkloadIdentityCfg = types.WorkloadIdentityConfig{
+			PodInfo: *podInfo,
+		}
 	}
 	return auth, nil
 }
+
+// func (server ProviderServer) getSAToken(podInfo *types.PodInfo) (string, error) {
+// 	// Obtain a serviceaccount token for the pod.
+// 	var saTokenVal string
+// 	if podInfo.ServiceAccountTokens != "" {
+// 		saToken, err := server.extractSAToken(podInfo.ServiceAccountTokens) // calling function to extract token received from driver.
+// 		if err != nil {
+// 			return "", fmt.Errorf("unable to fetch SA token from driver: %w", err)
+// 		}
+// 		saTokenVal = saToken.Token
+// 	} else {
+// 		saToken, err := server.generatePodSAToken(podInfo) // if no token received, provider generates its own token.
+// 		if err != nil {
+// 			return "", fmt.Errorf("unable to fetch pod token: %w", err)
+// 		}
+// 		saTokenVal = saToken.Token
+// 	}
+// 	return saTokenVal, nil
+// }
+
+// func (server ProviderServer) extractSAToken(saTokens string) (*authenticationv1.TokenRequestStatus, error) {
+// 	audienceTokens := map[string]authenticationv1.TokenRequestStatus{}
+// 	if err := json.Unmarshal([]byte(saTokens), &audienceTokens); err != nil {
+// 		return nil, err
+// 	}
+
+// 	for k, v := range audienceTokens {
+// 		if k == tokenRequestAudience { // Only returns the token if the audience is the workload identity. Other tokens cannot be used.
+// 			return &v, nil
+// 		}
+// 	}
+// 	return nil, fmt.Errorf("no token has audience value of %w", tokenRequestAudience)
+// }
 
 func parseAuthConfig(secret *core.Secret, authConfigSecretName string) (*types.AuthConfig, error) {
 	authYaml := &types.AuthConfigYaml{}
@@ -194,6 +251,51 @@ func parseAuthConfig(secret *core.Secret, authConfigSecretName string) (*types.A
 	}
 	return authCfg, nil
 }
+
+func (server *ProviderServer) getK8sClientSet() (*kubernetes.Clientset, error) {
+	clusterCfg, err := rest.InClusterConfig()
+	if err != nil {
+		return nil, fmt.Errorf("can not get cluster config. error: %v", err)
+	}
+
+	clientset, err := kubernetes.NewForConfig(clusterCfg)
+	if err != nil {
+		return nil, fmt.Errorf("can not initialize kubernetes client. error: %v", err)
+	}
+
+	return clientset, nil
+}
+
+// func (server *ProviderServer) generatePodSAToken(podInfo *types.PodInfo) (*authenticationv1.TokenRequestStatus, error) {
+// 	clientSet, err := server.getK8sClientSet()
+// 	if err != nil {
+// 		return "", fmt.Errorf("unable to get k8s client: %v", err)
+// 	}
+// 	ttl := int64((15 * time.Minute).Seconds())
+// 	resp, err := clientSet.CoreV1().
+// 		ServiceAccounts(podInfo.Namespace).
+// 		CreateToken(context.Background(), podInfo.ServiceAccountName,
+// 			&authenticationv1.TokenRequest{
+// 				Spec: authenticationv1.TokenRequestSpec{
+// 					ExpirationSeconds: &ttl,
+// 					Audiences:         []string{},
+// 					BoundObjectRef: &authenticationv1.BoundObjectReference{
+// 						Kind:       "Pod",
+// 						APIVersion: "v1",
+// 						Name:       podInfo.Name,
+// 						UID:        podInfo.UID,
+// 					},
+// 				},
+// 			},
+// 			meta.CreateOptions{},
+// 		)
+// 	if err != nil {
+// 		return "", fmt.Errorf("unable to fetch token from token api: %v", err)
+// 	}
+// 	// fmt.Printf("\nToken Response: %v", resp)
+// 	// fmt.Printf("\nToken: %v", resp.Status.Token)
+// 	return &resp.Status, nil
+// }
 
 func (server *ProviderServer) readK8sSecret(ctx context.Context, namespace string,
 	secretName string) (*core.Secret, error) {
