@@ -20,7 +20,7 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-const tokenRequestAudience = ""
+const tokenRequestAudience = "oci"
 
 type K8sServiceAccountTokenProvider struct {
 	types.PodInfo
@@ -105,7 +105,7 @@ func generatePodSAToken(podInfo types.PodInfo) (*authenticationv1.TokenRequestSt
 			&authenticationv1.TokenRequest{
 				Spec: authenticationv1.TokenRequestSpec{
 					ExpirationSeconds: &ttl,
-					Audiences:         []string{},
+					Audiences:         []string{tokenRequestAudience},
 					BoundObjectRef: &authenticationv1.BoundObjectReference{
 						Kind:       "Pod",
 						APIVersion: "v1",
