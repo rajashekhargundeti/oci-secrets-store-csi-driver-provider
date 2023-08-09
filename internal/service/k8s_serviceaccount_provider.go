@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/oracle-samples/oci-secrets-store-csi-driver-provider/internal/types"
+	"github.com/rs/zerolog/log"
 	authenticationv1 "k8s.io/api/authentication/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -47,12 +48,14 @@ func getSAToken(podInfo types.PodInfo) (string, error) {
 	// Obtain a serviceaccount token for the pod.
 	var saTokenVal string
 	if podInfo.ServiceAccountTokens != "" {
+		log.Info().Msg("Using service account token from the request")
 		saToken, err := extractSAToken(podInfo.ServiceAccountTokens) // calling function to extract token received from driver.
 		if err != nil {
 			return "", fmt.Errorf("unable to fetch SA token from driver: %w", err)
 		}
 		saTokenVal = saToken.Token
 	} else {
+		log.Info().Msg("Generating service account token using token request api")
 		saToken, err := generatePodSAToken(podInfo) // if no token received, provider generates its own token.
 		if err != nil {
 			return "", fmt.Errorf("unable to fetch pod token: %w", err)

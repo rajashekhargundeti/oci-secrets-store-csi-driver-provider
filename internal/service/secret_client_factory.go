@@ -50,11 +50,13 @@ func (factory *OCISecretClientFactory) createConfigProvider( //nolint:ireturn //
 
 	case types.Workload:
 		podInfo := authCfg.WorkloadIdentityCfg.PodInfo
-		saToken, err := getSAToken(podInfo)
-		if err != nil {
-			return nil, err
-		}
-		return ociGoSdkAuth.OkeWorkloadIdentityConfigurationProviderWithServiceAccountTokenProvider(ociGoSdkAuth.NewSuppliedServiceAccountTokenProvider(saToken))
+		// saToken, err := getSAToken(podInfo)
+		// if err != nil {
+		// 	return nil, err
+		// }
+		return ociGoSdkAuth.OkeWorkloadIdentityConfigurationProviderWithServiceAccountTokenProvider(NewK8sServiceAccountTokenProvider(podInfo))
+
+		// return ociGoSdkAuth.OkeWorkloadIdentityConfigurationProviderWithServiceAccountTokenProvider(ociGoSdkAuth.NewSuppliedServiceAccountTokenProvider(saToken))
 
 	default:
 		return nil, fmt.Errorf("unable to determine OCI principal type for configuration provider")
