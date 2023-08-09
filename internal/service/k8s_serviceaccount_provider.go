@@ -20,7 +20,7 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-const tokenRequestAudience = "oci"
+const tokenRequestAudience = "api"
 
 type K8sServiceAccountTokenProvider struct {
 	types.PodInfo
