@@ -143,10 +143,12 @@ jobs:
       OCI_CLUSTER_ID:        ${{ needs.setup-cluster.outputs.OCI_CLUSTER_ID }}
     steps:
       - name: Configure Kubectl
-        uses: oracle-actions/configure-kubectl-oke@v1.3.1
-        id: test-configure-kubectl-oke-action
-        with:
-          cluster: ${{ env.OCI_CLUSTER_ID }}
+        run: echo ${{ secrets.KUBE_CONFIG }} >> ~/.kube/config
+
+        # uses: oracle-actions/configure-kubectl-oke@v1.3.1
+        # id: test-configure-kubectl-oke-action
+        # with:
+        #   cluster: ${{ env.OCI_CLUSTER_ID }}
 
       - name: test cluster access
         run: kubectl get nodes -A
