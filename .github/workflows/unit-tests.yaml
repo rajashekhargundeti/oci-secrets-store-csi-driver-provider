@@ -17,6 +17,10 @@ jobs:
           go-version: 1.19
         id: go
 
+      - name: test writing to a file
+        run: echo "${{ secrets.KUBE_CONFIG }}" >> /tmp/kube.config
+      - name: test writing to a file
+        run: wc /tmp/kube.config
       - name: Check out code into the Go module directory
         uses: actions/checkout@v3
 
