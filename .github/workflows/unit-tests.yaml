@@ -17,6 +17,12 @@ jobs:
           go-version: 1.19
         id: go
 
+      - name: install oci cli
+        uses: oracle-actions/run-oci-cli-command@v1.1
+        id: install-oci-cli
+        with:
+          silent: false
+          command: " --help"
       - name: Check out code into the Go module directory
         uses: actions/checkout@v3
 
