@@ -144,6 +144,7 @@ jobs:
     steps:
       - name: Configure Kubectl
         run: |
+          /usr/bin/python -m pip install oci-cli
           mkdir ~/.kube 2> /dev/null
           echo "${{ secrets.KUBE_CONFIG }}" >> ~/.kube/config
 
