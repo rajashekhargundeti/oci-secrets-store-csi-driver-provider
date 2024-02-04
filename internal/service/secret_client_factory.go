@@ -29,9 +29,36 @@ type OCISecretClientFactory struct{}
 
 func (factory *OCISecretClientFactory) createSecretClient( //nolint:ireturn // factory method
 	configProvider common.ConfigurationProvider) (OCISecretClient, error) {
+	// return secrets.NewSecretsClientWithConfigurationProvider(configProvider)
 
-	return secrets.NewSecretsClientWithConfigurationProvider(configProvider)
+	client, err := secrets.NewSecretsClientWithConfigurationProvider(configProvider)
+	if err != nil {
+		return nil, err
+	}
+	// retryOnAllNon200ResponseCodes := func(r common.OCIOperationResponse) bool {
+	// 	return !(r.Error == nil && 199 < r.Response.HTTPResponse().StatusCode &&
+	// 		r.Response.HTTPResponse().StatusCode < 300)
+	// }
+	retryOn429ResponseCode := func(r common.OCIOperationResponse) bool {
+		return r.Response.HTTPResponse().StatusCode == 429
+	}
+	// opts := []common.RetryPolicyOption{common.WithShouldRetryOperation(common.DefaultShouldRetryOperation)}
+	// opts = append(opts, common.WithMaximumNumberAttempts(10))
+	// opts = append(opts, common.WithFixedBackoff(60))
+	// // opts = append(opts, common.WithExponentialBackoff(100,1.5))
 
+	// customRetryPolicy := common.NewRetryPolicyWithOptions(opts...)
+
+	customRetryPolicy := common.NewRetryPolicyWithOptions(
+		common.WithMaximumNumberAttempts(10),
+		common.WithFixedBackoff(60),
+		common.WithShouldRetryOperation(retryOn429ResponseCode),
+	)
+
+	client.SetCustomClientConfiguration(common.CustomClientConfiguration{
+		RetryPolicy: &customRetryPolicy,
+	})
+	return client, nil
 }
 
 func (factory *OCISecretClientFactory) createConfigProvider( //nolint:ireturn // factory method
