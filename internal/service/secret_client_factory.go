@@ -15,6 +15,7 @@ import (
 	"github.com/oracle/oci-go-sdk/v65/common"
 	"github.com/oracle/oci-go-sdk/v65/common/auth"
 	"github.com/oracle/oci-go-sdk/v65/secrets"
+	"github.com/rs/zerolog/log"
 )
 
 const httpClientTimeout = 20 * time.Second
@@ -40,6 +41,7 @@ func (factory *OCISecretClientFactory) createSecretClient( //nolint:ireturn // f
 	// 		r.Response.HTTPResponse().StatusCode < 300)
 	// }
 	retryOn429ResponseCode := func(r common.OCIOperationResponse) bool {
+		log.Info().Int("response code", r.Response.HTTPResponse().StatusCode).Bool("Condition Result", r.Response.HTTPResponse().StatusCode == 429).Msg("In RetryBlock")
 		return r.Response.HTTPResponse().StatusCode == 429
 	}
 	// opts := []common.RetryPolicyOption{common.WithShouldRetryOperation(common.DefaultShouldRetryOperation)}
