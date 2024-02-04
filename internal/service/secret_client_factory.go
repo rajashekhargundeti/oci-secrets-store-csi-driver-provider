@@ -29,9 +29,22 @@ type OCISecretClientFactory struct{}
 
 func (factory *OCISecretClientFactory) createSecretClient( //nolint:ireturn // factory method
 	configProvider common.ConfigurationProvider) (OCISecretClient, error) {
+	// return secrets.NewSecretsClientWithConfigurationProvider(configProvider)
 
-	return secrets.NewSecretsClientWithConfigurationProvider(configProvider)
+	client, err := secrets.NewSecretsClientWithConfigurationProvider(configProvider)
+	if err != nil {
+		return nil, err
+	}
 
+	customRetryPolicy := common.NewRetryPolicyWithOptions(
+		common.WithMaximumNumberAttempts(10),
+		common.WithFixedBackoff(60),
+	)
+
+	client.SetCustomClientConfiguration(common.CustomClientConfiguration{
+		RetryPolicy: &customRetryPolicy,
+	})
+	return client, nil
 }
 
 func (factory *OCISecretClientFactory) createConfigProvider( //nolint:ireturn // factory method
