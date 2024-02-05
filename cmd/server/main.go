@@ -53,6 +53,7 @@ import (
 	"net/http"
 	"net/http/pprof"
 
+	"github.com/evanj/concurrentlimit/grpclimit"
 	"github.com/oracle-samples/oci-secrets-store-csi-driver-provider/internal/logging"
 	"github.com/oracle-samples/oci-secrets-store-csi-driver-provider/internal/metrics"
 	"github.com/oracle-samples/oci-secrets-store-csi-driver-provider/internal/network"
@@ -138,7 +139,7 @@ func main() {
 	// }
 
 	// grpcServer := grpc.NewServer(opts...)
-	grpcServer, err := grpclimit.NewServer(nil, *concurrentRequests)
+	grpcServer, err := grpclimit.NewServer(nil, *concurrentRequests, opts)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to initialize grpclimit NewServer")
 		exitCode = errorCode
