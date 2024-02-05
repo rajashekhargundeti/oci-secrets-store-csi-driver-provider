@@ -72,13 +72,17 @@ const HealthPath = "/health"
 const ProfilingPath = "/debug/pprof"
 
 var (
-	endpoint            = flag.String("endpoint", "unix:///opt/provider/sockets/oci.sock", "CSI gRPC endpoint")
-	endpointPermissions = flag.Int("endpoint-permissions", 0600, "configure file permisssions for the socket")
-	healthzPort         = flag.Int("healthz-port", 8098, "configure http listener for reporting health")
-	metricsBackend      = flag.String("metrics-backend", "prometheus", "Backend used for metrics")
-	metricsPort         = flag.Int("metrics-port", 8198, "Metrics port for metrics backend")
-	enableProfile       = flag.Bool("enable-pprof", true, "enable pprof profiling")
-	pprofPort           = flag.Int("pprof-port", 6060, "port for pprof profiling")
+	endpoint              = flag.String("endpoint", "unix:///opt/provider/sockets/oci.sock", "CSI gRPC endpoint")
+	endpointPermissions   = flag.Int("endpoint-permissions", 0600, "configure file permisssions for the socket")
+	healthzPort           = flag.Int("healthz-port", 8098, "configure http listener for reporting health")
+	metricsBackend        = flag.String("metrics-backend", "prometheus", "Backend used for metrics")
+	metricsPort           = flag.Int("metrics-port", 8198, "Metrics port for metrics backend")
+	enableProfile         = flag.Bool("enable-pprof", true, "enable pprof profiling")
+	pprofPort             = flag.Int("pprof-port", 6060, "port for pprof profiling")
+	concurrentRequests    = flag.Int("concurrent-requests", 10, "Limits the number of concurrent requests")
+	concurrentConnections = flag.Int("concurrent-connections", 10, "Limits the number of concurrent connections")
+	// maxRetries          = flag.Int("retry-max-retries", 10, "port for pprof profiling")
+	// retryInterval       = flag.Int("retry-interval", 100, "port for pprof profiling")
 )
 
 func init() {
@@ -96,7 +100,8 @@ func main() {
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel, syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 
-	listener, err := network.ListenUDS(*endpoint)
+	// listener, err := network.ListenUDS(*endpoint)
+	listener, err := network.ListenLimitUDS(*endpoint)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to listen on socket")
 		exitCode = errorCode
@@ -124,7 +129,21 @@ func main() {
 	opts := []grpc.ServerOption{
 		grpc.UnaryInterceptor(utils.LogInterceptor()),
 	}
-	grpcServer := grpc.NewServer(opts...)
+
+	// customOpts := {
+	// 	retrySettings: {
+	// 		maxRetries: *maxRetries,
+	// 		interval: *retryInterval
+	// 	}
+	// }
+
+	// grpcServer := grpc.NewServer(opts...)
+	grpcServer, err := grpclimit.NewServer(nil, *concurrentRequests)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to initialize grpclimit NewServer")
+		exitCode = errorCode
+		return
+	}
 	if err := initProviderService(grpcServer); err != nil {
 		exitCode = errorCode
 		return

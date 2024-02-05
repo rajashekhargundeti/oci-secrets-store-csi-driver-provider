@@ -41,6 +41,28 @@ func ListenUDS(endpoint string) (net.Listener, error) {
 	return net.Listen(proto, addr) // creates socket file automatically
 }
 
+func ListenLimitUDS(endpoint string, connectionLimit int) (net.Listener, error) {
+
+	proto, addr, err := ParseSocketEndpoint(endpoint)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse endpoint")
+	}
+
+	if addr == "" {
+		return nil, fmt.Errorf("socket path is empty")
+	}
+
+	// Attempt to remove the Unix domain socket (UDS) to handle cases where a previous execution was
+	// terminated before fully closing the socket listener and unlinking.
+	err = removeSocketIfExists(addr)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Info().Str("socketPath", addr).Msg("Opening unix domain socket")
+	return concurrentlimit.Listen(proto, addr, connectionLimit)
+}
+
 func removeSocketIfExists(socketPath string) error {
 	_, err := os.Stat(socketPath)
 	if err != nil && !os.IsNotExist(err) {
