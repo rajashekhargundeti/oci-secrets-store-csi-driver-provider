@@ -102,7 +102,7 @@ func main() {
 	signal.Notify(signalChannel, syscall.SIGTERM, syscall.SIGINT, os.Interrupt)
 
 	// listener, err := network.ListenUDS(*endpoint)
-	listener, err := network.ListenLimitUDS(*endpoint)
+	listener, err := network.ListenLimitUDS(*endpoint, *concurrentConnections)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to listen on socket")
 		exitCode = errorCode
@@ -127,10 +127,11 @@ func main() {
 	log.Info().Str("address", strconv.Itoa(*metricsPort)+metrics.MetricsPath).
 		Msg("Metrics server listening")
 
-	opts := []grpc.ServerOption{
-		grpc.UnaryInterceptor(utils.LogInterceptor()),
-	}
+	// opts := []grpc.ServerOption{
+	// 	grpc.UnaryInterceptor(utils.LogInterceptor()),
+	// }
 
+	opt := grpc.UnaryInterceptor(utils.LogInterceptor())
 	// customOpts := {
 	// 	retrySettings: {
 	// 		maxRetries: *maxRetries,
@@ -139,7 +140,7 @@ func main() {
 	// }
 
 	// grpcServer := grpc.NewServer(opts...)
-	grpcServer, err := grpclimit.NewServer(nil, *concurrentRequests, opts)
+	grpcServer, err := grpclimit.NewServer("", *concurrentRequests, opt)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to initialize grpclimit NewServer")
 		exitCode = errorCode
