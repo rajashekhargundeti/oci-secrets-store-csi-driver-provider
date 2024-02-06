@@ -58,7 +58,6 @@ import (
 	"github.com/oracle-samples/oci-secrets-store-csi-driver-provider/internal/metrics"
 	"github.com/oracle-samples/oci-secrets-store-csi-driver-provider/internal/network"
 	"github.com/oracle-samples/oci-secrets-store-csi-driver-provider/internal/server"
-	"github.com/oracle-samples/oci-secrets-store-csi-driver-provider/internal/utils"
 	"github.com/oracle/oci-go-sdk/v65/common"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
@@ -131,7 +130,7 @@ func main() {
 	// 	grpc.UnaryInterceptor(utils.LogInterceptor()),
 	// }
 
-	opt := grpc.UnaryInterceptor(utils.LogInterceptor())
+	// opt := grpc.UnaryInterceptor(utils.LogInterceptor())
 	// customOpts := {
 	// 	retrySettings: {
 	// 		maxRetries: *maxRetries,
@@ -140,7 +139,7 @@ func main() {
 	// }
 
 	// grpcServer := grpc.NewServer(opts...)
-	grpcServer, err := grpclimit.NewServer("", *concurrentRequests, opt)
+	grpcServer, err := grpclimit.NewServer("", *concurrentRequests)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to initialize grpclimit NewServer")
 		exitCode = errorCode
