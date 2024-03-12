@@ -28,6 +28,7 @@ The provider is a gRPC server accessible via the Unix domain socket. It's interf
       * [How to introduce new modules or upgrade existing ones?](#dep-management-vendoring)
    * [Versioning](#versioning)
    * [Linter](#linter)
+   * [CI Setup](#ci-setup)
 * [Known Issues](#known-issues)
 * [FAQ](#faq)
 
@@ -114,7 +115,7 @@ Provider can be deployed in two ways
 ### Helm
 
 ```shell
-helm repo add oci-provider https://oracle-samples.github.io/oci-secrets-store-csi-driver-provider/charts
+helm repo add oci-provider https://oracle.github.io/oci-secrets-store-csi-driver-provider/charts
 helm install oci-provider oci-provider/oci-secrets-store-csi-driver-provider --namespace kube-system
 ```
 #### From Code Repository
@@ -216,10 +217,10 @@ Let's describe the provider-specific `parameters` section:
    ```
    volumes:
    - name: secrets-store-inline
-      csi:
-         driver: secrets-store.csi.k8s.io
-         readOnly: true
-         volumeAttributes:
+     csi:
+       driver: secrets-store.csi.k8s.io
+       readOnly: true
+       volumeAttributes:
          secretProviderClass: my-test-spc
    ```
 
@@ -227,7 +228,7 @@ Let's describe the provider-specific `parameters` section:
    ```
    volumeMounts:
       - name: secrets-store-inline
-      mountPath: '/mnt/secrets-store'
+        mountPath: '/mnt/secrets-store'
    ```
 Refer to the sample file provided at `deploy/example/app-deployment.yaml`
 
@@ -333,6 +334,7 @@ All changes to those modules should be reflected in the remote VCS repository.
    ```
    This command will update sources for that module in `vendor/` folder.
 1. Then commit those changes.
+1. Note: When 'sigs.k8s.io/secrets-store-csi-driver' is being upgraded, please make sure you upgrade version for secrets-store-csi-driver in the Chart.yaml
 
 <a name="versioning"></a>
 ## Versioning
@@ -340,7 +342,6 @@ Each build publishes 2 artifacts: Docker image and Helm chart.
 Both of these artifacts use SemVer 2.0.0 for versioning.
 
 That means that developers must increment both Docker image and Helm chart versions, otherwise, the build will fail:
-* Bump `version` field  in `ocibuild.conf` file for Docker image;
 * Specify the same version in `appVersion` field in `charts/oci-secrets-store-csi-driver-provider/Chart.yaml` file;
 * Bump `version` field in `charts/oci-secrets-store-csi-driver-provider/Chart.yaml` file.
 
@@ -353,6 +354,57 @@ Here is the tool's [documentation](https://golangci-lint.run/).
 
 Since this tool is standalone, the developers have to control the version themselves.
 > **_NOTE:_** Current version is 1.46.2
+
+<a name="ci-setup"></a>
+## CI Setup
+GitHub Actions is used to implement Continuous Integration pipeline.
+Location in the code base: .github/workflows
+Github workflows: 
+1. unit-tests.yaml – Runs unit test cases
+  * Functionality: 
+     * builds binary 
+     * run unit tests and test coverage reports 
+     * send report to coveralls
+     
+  * triggers: 
+     * On pushing a commit
+  * dependencies:
+     * None
+2.	build-n-push.yaml – builds and pushes image to image registry
+  * Functionality: 
+     * builds docker image 
+     * pushes to registry
+  * triggers:
+     * on workflow_call from e2e tests and release workflows
+  * dependencies:
+     * unit-tests.yaml
+3. e2e-tests.yaml – Runs end to end test cases
+  * Functionality: 
+     * Creates cluster
+     * Creates Vault and Secrets
+     * Deploys the provider and sample workload
+     * Tests mounted contents with in a workload pod
+     * Cleans up created resources
+  * triggers:
+     * on pull request
+  * dependencies:
+     * unit-tests.yaml
+     * build-n-push.yaml
+  * flow: 
+  <img width="1460" alt="E2E Pipeline" src="https://user-images.githubusercontent.com/11814052/233365478-520a29f9-e241-41ae-88d1-8949b8560210.png">  
+
+4. release.yaml – Release
+  * Functionality: 
+     * Tags the docker image with release version
+     * Releases helm charts
+  * triggers:
+     * on creating a release tag
+  * dependencies:
+     * unit-tests.yaml
+     * build-n-push.yaml
+  * flow: 
+  <img width="1455" alt="Release Pipeline" src="https://user-images.githubusercontent.com/11814052/233365444-ac2d7852-6905-47dd-ae82-265a2ae3ad9b.png">
+
 
 <a name="known-issues"></a>
 ## Known Issues
