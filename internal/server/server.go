@@ -11,6 +11,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"strconv"
 	"time"
 
@@ -56,7 +57,8 @@ const secretProviderClassField = "secretProviderClass"
 const podNameField = "csi.storage.k8s.io/pod.name"
 const podNamespaceField = "csi.storage.k8s.io/pod.namespace"
 const podUIDField = "csi.storage.k8s.io/pod.uid"
-const podServiceAccountField = "csi.storage.k8s.io/serviceAccount.name"
+const podServiceAccountNameField = "csi.storage.k8s.io/serviceAccount.name"
+const podServiceAccountTokensField = "csi.storage.k8s.io/serviceAccount.tokens"
 
 // const regionField = "region"
 
@@ -88,6 +90,7 @@ func (server *ProviderServer) Mount(
 	}
 	// log.Info("Request Attributes").Str("attributes", attributes)
 	fmt.Println("attributes:", attributes)
+	fmt.Println("Type of tokens:", reflect.TypeOf(attributes[podServiceAccountTokensField]))
 
 	secretBundleRequests, err := server.retrieveSecretRequests(attributes)
 	if err != nil {
@@ -180,9 +183,10 @@ func (server *ProviderServer) retrieveAuthConfig(ctx context.Context,
 		podInfo := &types.PodInfo{
 			Name:               requestAttributes[podNameField],
 			UID:                apiMachineryTypes.UID(requestAttributes[podUIDField]),
-			ServiceAccountName: requestAttributes[podServiceAccountField],
+			ServiceAccountName: requestAttributes[podServiceAccountNameField],
 			Namespace:          requestAttributes[podNamespaceField],
 		}
+		// podInfo.ServiceAccountToken = extractSATokenFromMountRequest(requestAttributes[podServiceAccountTokensField], "")
 		saTokenStr, err := server.getSAToken(podInfo)
 		if err != nil {
 			err := fmt.Errorf("can not generate token for service account: %s, namespace: %s, Error: %v",
@@ -242,6 +246,11 @@ func (server *ProviderServer) getK8sClientSet() (*kubernetes.Clientset, error) {
 
 	return clientset, nil
 }
+
+// func extractSATokenFromMountRequest(saTokens map[string]any, tokenName string) string {
+// 	tokens := map[string]any{}
+// 	token = json.Unmarshal(saTokens, &tokens)
+// }
 
 func (server *ProviderServer) getSAToken(podInfo *types.PodInfo) (string, error) {
 	clientSet, err := server.getK8sClientSet()
