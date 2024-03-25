@@ -16,7 +16,7 @@ COPY internal  ./internal
 COPY vendor    ./vendor
 
 # Build provider
-RUN make test build
+RUN make build
 
 FROM oraclelinux:7-slim
 
