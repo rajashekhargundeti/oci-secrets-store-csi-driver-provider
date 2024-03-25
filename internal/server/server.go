@@ -82,6 +82,8 @@ func (server *ProviderServer) Mount(
 	ctx context.Context, mountRequest *provider.MountRequest) (*provider.MountResponse, error) {
 	var filePermission os.FileMode
 
+	fmt.Println("mountRequest:", mountRequest)
+	fmt.Println("attributes before unmarshal:", mountRequest.GetAttributes())
 	attributes, err := server.unmarshalRequestAttributes(mountRequest.GetAttributes())
 	if err != nil {
 		return nil, status.Error(
