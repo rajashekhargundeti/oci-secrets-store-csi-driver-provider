@@ -89,8 +89,25 @@ func (server *ProviderServer) Mount(
 			"failed to unmarshal SecretProviderClass parameters or attributes provided by driver")
 	}
 	// log.Info("Request Attributes").Str("attributes", attributes)
+
 	fmt.Println("attributes:", attributes)
+	fmt.Println("tokens:", attributes[podServiceAccountTokensField])
 	fmt.Println("Type of tokens:", reflect.TypeOf(attributes[podServiceAccountTokensField]))
+	tokens, err := server.unmarshalRequestAttributes(attributes[podServiceAccountTokensField])
+	if err != nil {
+		return nil, status.Error(
+			codes.InvalidArgument,
+			"failed to unmarshal tokens parameters provided by driver")
+	}
+	fmt.Println("tokensUnmarshalled:", tokens)
+	token, err := server.unmarshalRequestAttributes(tokens[""])
+	if err != nil {
+		return nil, status.Error(
+			codes.InvalidArgument,
+			"failed to unmarshal token parameters or attributes provided by driver")
+	}
+	fmt.Println("tokenUnmarshalled:", token)
+	fmt.Println("tokenUnmarshalled:", token["token"])
 
 	secretBundleRequests, err := server.retrieveSecretRequests(attributes)
 	if err != nil {
