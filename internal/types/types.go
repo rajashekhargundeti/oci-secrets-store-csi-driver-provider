@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"gopkg.in/yaml.v3"
 	apiMachineryTypes "k8s.io/apimachinery/pkg/types"
@@ -52,10 +53,16 @@ func determineFileName(name string, alias string) string {
 }
 
 type PodInfo struct {
-	Namespace          string
-	Name               string
-	UID                apiMachineryTypes.UID
-	ServiceAccountName string
+	Namespace           string
+	Name                string
+	UID                 apiMachineryTypes.UID
+	ServiceAccountName  string
+	ServiceAccountToken ServiceAccountToken
+}
+
+type ServiceAccountToken struct {
+	token               string
+	expirationTimestamp time.Time
 }
 
 type VersionNumber int64

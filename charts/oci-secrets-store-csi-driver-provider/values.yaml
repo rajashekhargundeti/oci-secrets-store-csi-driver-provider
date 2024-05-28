@@ -13,7 +13,7 @@ provider:
     repository: ghcr.io/rajashekhargundeti/oci-secrets-store-csi-driver-provider
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: b12ec63df8fa821595d2c0c489f3c7a4712c7ddb
+    tag: 9f07b735bcf7162e6d2084d0cfc6d7a0800f78ce
 
   # Provider container resources
   resources:
@@ -70,4 +70,3 @@ secrets-store-csi-driver:
   rotationPollInterval: 2m  
   tokenRequests:
     - audience: ""
-    
